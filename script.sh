@@ -334,7 +334,6 @@ configure_android(){
 
 #kotlin directory renames and file handling
 kotlin(){
-    echo $1 $2
     create_new_nested_directory_KOTLIN $1 $2
     copy_kt_extentioned_file_KOTLIN $1 $2 
     delete_old_package_KOTLIN $1 $2
