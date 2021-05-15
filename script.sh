@@ -157,12 +157,70 @@ configure_android_configuration__PACKAGE_NAME(){
         exit 1
     fi
 }
+configure_android_configuration__PACKAGE_NAME_SECOND(){
 
+    local ANDROID_DIR_PATH="$1/android/app/src/profile/"
+    local ANDROID_CONFIGURATION_FILE="$1/android/app/src/profile/AndroidManifest.xml"
+
+    if test -d $ANDROID_DIR_PATH;then
+
+        echo "Entering into the app[ANDROID] $ANDROID_DIR_PATH"
+        cd "$ANDROID_DIR_PATH"
+        echo "✔️ entered"
+        echo "Searching file AndroidManifest.xml"
+
+        if test -f "$ANDROID_CONFIGURATION_FILE" ;then 
+
+            echo "✔️ found AndroidManifest.xml"
+            echo "Naming the package to $2"
+            sed -i "s/package_name/$2/g" AndroidManifest.xml
+            echo "✔️ Successfully named the package"
+
+        else
+            echo "File doesnot exist"
+            exit 1
+        fi
+
+    else
+        echo "Directory doesnot exist"
+        exit 1
+    fi
+}
+
+configure_android_configuration__PACKAGE_NAME_KOTLIN(){
+
+    local ANDROID_DIR_PATH="$1/android/app/src/main/kotlin/com/daphne/primo/"
+    local ANDROID_CONFIGURATION_FILE="$1/android/app/src/main/kotlin/com/daphne/primo/MainActivity.kt"
+
+    if test -d $ANDROID_DIR_PATH;then
+
+        echo "Entering into the app[ANDROID] $ANDROID_DIR_PATH"
+        cd "$ANDROID_DIR_PATH"
+        echo "✔️ entered"
+        echo "Searching file MainActivity.kt"
+
+        if test -f "$ANDROID_CONFIGURATION_FILE" ;then 
+
+            echo "✔️ found MainActivity.kt"
+            echo "Naming the package to $2"
+            sed -i "s/package_name/$2/g" MainActivity.kt
+            echo "✔️ Successfully named the package"
+
+        else
+            echo "File doesnot exist"
+            exit 1
+        fi
+
+    else
+        echo "Directory doesnot exist"
+        exit 1
+    fi
+}
 #android change application id
 configure_android_configuration_APPLICATION_ID(){
 
-    local ANDROID_DIR_PATH="$1/android/app/src/"
-    local ANDROID_CONFIGURATION_FILE="$1/android/app/src/build.gradle"
+    local ANDROID_DIR_PATH="$1/android/app/"
+    local ANDROID_CONFIGURATION_FILE="$1/android/app/build.gradle"
 
     if test -d $ANDROID_DIR_PATH;then
 
@@ -188,6 +246,69 @@ configure_android_configuration_APPLICATION_ID(){
         exit 1
     fi
 }
+#create a new dir structure as package name [KOTLIN]
+
+create_new_nested_directory_KOTLIN(){
+    local KOTLIN_DIR="$1/android/app/src/main/kotlin/com/daphne/primo"
+    local TEMP_DIR="$1/android/app/src/main/kotlin/"
+    local NEW_DIR="test/$2"
+
+    if test -d $TEMP_DIR;then
+        cd $TEMP_DIR
+        mkdir -p $NEW_DIR
+        echo "created a new temp dir $NEW_DIR"
+    else
+        echo "$TEMP_DIR directory doesnt exist"
+    fi 
+}
+
+copy_kt_extentioned_file_KOTLIN(){
+    local KOTLIN_DIR="$1/android/app/src/main/kotlin/com/daphne/primo"
+    local TEMP_DIR="$1/android/app/src/main/kotlin/"
+    local NEW_DIR="test/$2"
+
+    if test -d $KOTLIN_DIR;then
+        if test -d "$TEMP_DIR/$NEW_DIR";then
+            echo "Copying files from $KOTLIN_DIR TO $TEMP_DIR/$NEW_DIR"
+            cp "$KOTLIN_DIR/MainActivity.kt" "$TEMP_DIR/$NEW_DIR"
+            echo "Copied"
+        else
+            echo "$TEMP_DIR/$NEW_DIR directory not found"
+            exit 1
+        fi 
+    else
+        echo "$KOTLIN_DIR directory doesnt exist"
+        exit 1
+    fi
+}
+
+delete_old_package_KOTLIN(){
+    local KOTLIN_DIR="$1/android/app/src/main/kotlin/"
+
+    if test -d $KOTLIN_DIR;then
+        cd $KOTLIN_DIR
+        echo "Deleting previous directory $KOTLIN_DIR"
+        rm -rf com
+        echo "Deleted"
+    else
+        echo "$KOTLIN_DIR doesnt exist"
+        exit 1
+    fi
+}
+
+move_and_create_original_package_from_test_package_KOTLIN(){
+    local TEMP_DIR="$1/android/app/src/main/kotlin/test/$2"
+    
+    if test -d $TEMP_DIR;then 
+        cd "$1/android/app/src/main/kotlin/"
+        echo "Moving $2 to original space"
+        mv -v test/*  "$1/android/app/src/main/kotlin/"
+        rm -rf test
+    else
+        echo "$TEMP_DIR doesnt exist"
+        exit 1
+    fi
+}
 
 #check paths
 checkpaths(){
@@ -199,27 +320,46 @@ checkpaths(){
 configure_ios(){
     configure_ios_configuration__APP_NAME $1 $2
     configure_ios_configuration__PACKAGE_NAME $1 $3
+
 }
 
 #configure_android
 configure_android(){
     configure_android_configuration__APP_NAME $1 $2 
     configure_android_configuration__PACKAGE_NAME $1 $3
+    configure_android_configuration__PACKAGE_NAME_SECOND $1 $3
+    configure_android_configuration__PACKAGE_NAME_KOTLIN $1 $3
     configure_android_configuration_APPLICATION_ID $1 $4
 }
 
+#kotlin directory renames and file handling
+kotlin(){
+    echo $1 $2
+    create_new_nested_directory_KOTLIN $1 $2
+    copy_kt_extentioned_file_KOTLIN $1 $2 
+    delete_old_package_KOTLIN $1 $2
+    move_and_create_original_package_from_test_package_KOTLIN $1 $2
+}
+
 #basic inputs and output
-echo "Welcome to DAPHNE SOLUTIONS whitelabeling script :)"
-echo "Enter a name for your Application eg: app :"
-read __APP_NAME
-echo "Enter the package name for your Application eg: com.example.company :"
-read __PACKAGE_NAME
-echo "Enter the application id for your Application eg: com.example.app"
-read __APPLICATION_ID
-echo "Enter the path where your App Icon exists :"
-read __ICON_PATH
-echo "Enter the path to the app to WhiteLabel :"
-read __APP_PATH
+# echo "Welcome to DAPHNE SOLUTIONS whitelabeling script :)"
+# echo "Enter a name for your Application eg: app :"
+# read __APP_NAME
+# echo "Enter the package name for your Application eg: com.example.company :"
+# read __PACKAGE_NAME
+# echo "Enter the application id for your Application eg: com.example.app"
+# read __APPLICATION_ID
+# echo "Enter the path where your App Icon exists :"
+# read __ICON_PATH
+# echo "Enter the path to the app to WhiteLabel :"
+# read __APP_PATH 
+
+__APP_NAME="test3"
+__PACKAGE_NAME="com.daphne.test3"
+__APPLICATION_ID="com.daphne.app"
+__ICON_PATH="/home/saugat/Downloads/icon2.jpeg"
+__APP_PATH="/home/saugat/dev/whitelabelScript/test3"
+__KOTLIN_NEW_PATH="/com/daphne/test3"
 
 #function executions
 checkpaths $__APP_PATH $__ICON_PATH
@@ -227,4 +367,5 @@ install_sed
 copy_icon_to_path $__ICON_PATH "$__APP_PATH/icon/"
 configure_ios $__APP_PATH $__APP_NAME $__PACKAGE_NAME
 configure_android $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__APPLICATION_ID
+kotlin $__APP_PATH $__KOTLIN_NEW_PATH
 echo "✔️ Done"
