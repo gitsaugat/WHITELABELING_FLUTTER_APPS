@@ -31,8 +31,15 @@ install_sed(){
 #Copy icon to the path 
 
 copy_icon_to_path(){
-    echo "Setting Icon"
-    cp -r $1 $2
+    if test -d "$2/icon";then 
+        echo "Setting Icon"
+        cp -r $1 $2
+    else
+        echo "Creating Icon Dir and Setting Icon"
+        cd $2
+        mkdir icon 
+        cp -r $1 "$2/icon"
+    fi
 }
 
 #ios change app name
@@ -69,8 +76,8 @@ configure_ios_configuration__APP_NAME(){
 #ios change package name
 configure_ios_configuration__PACKAGE_NAME(){
 
-    local IOS_DIR_PATH="$1/ios/Runner"
-    local IOS_CONFIGURATION_FILE="$1/ios/Runner/Info.plist"
+    local IOS_DIR_PATH="$1/ios/Runner.xcodeproj/"
+    local IOS_CONFIGURATION_FILE="$1/ios/Runner.xcodeproj/project.pbxproj"
 
     if test -d $IOS_DIR_PATH;then
 
@@ -81,10 +88,10 @@ configure_ios_configuration__PACKAGE_NAME(){
 
         if test -f "$IOS_CONFIGURATION_FILE";then 
 
-            echo "✔️ found Info.plist"
+            echo "✔️ found project.pbxproj"
             echo "Naming the App to $2"
-            sed -i "s/$3/$2/g" Info.plist
-            echo "✔️ Successfully named the app"
+            sed -i "s/$3/$2/g" project.pbxproj
+            echo "✔️ Successfully named the package"
 
         else
             echo "File doesnot exist"
@@ -303,7 +310,9 @@ move_and_create_original_package_from_test_package_KOTLIN(){
         cd "$1/android/app/src/main/kotlin/"
         echo "Moving $2 to original space"
         mv -v test/*  "$1/android/app/src/main/kotlin/"
+        echo "Deleting Temp Directory"
         rm -rf test
+        echo "Deleted"
     else
         echo "$TEMP_DIR doesnt exist"
         exit 1
@@ -365,7 +374,7 @@ read __KOTLIN_NEW_PATH
 #function executions
 checkpaths $__APP_PATH $__ICON_PATH
 install_sed
-copy_icon_to_path $__ICON_PATH "$__APP_PATH/icon/"
+copy_icon_to_path $__ICON_PATH $__APP_PATH
 configure_ios $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__TO_REPLACE_PACKAGE_NAME $__TO_REPLACE_APP_NAME
 configure_android $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__APPLICATION_ID $__TO_REPLACE_PACKAGE_NAME $__TO_REPLACE_APPLICATION_ID $__TO_REPLACE_APP_NAME
 kotlin $__APP_PATH $__KOTLIN_NEW_PATH
