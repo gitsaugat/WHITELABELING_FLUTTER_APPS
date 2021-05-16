@@ -53,7 +53,7 @@ configure_ios_configuration__APP_NAME(){
 
             echo "✔️ found Info.plist"
             echo "Naming the App to $2"
-            sed -i "s/app_name/$2/g" Info.plist
+            sed -i "s/$3/$2/g" Info.plist
             echo "✔️ Successfully named the app"
 
         else
@@ -83,7 +83,7 @@ configure_ios_configuration__PACKAGE_NAME(){
 
             echo "✔️ found Info.plist"
             echo "Naming the App to $2"
-            sed -i "s/package_name/$2/g" Info.plist
+            sed -i "s/$3/$2/g" Info.plist
             echo "✔️ Successfully named the app"
 
         else
@@ -113,7 +113,7 @@ configure_android_configuration__APP_NAME(){
 
             echo "✔️ found AndroidManifest.xml"
             echo "Naming the App to $2"
-            sed -i "s/app_name/$2/g" AndroidManifest.xml
+            sed -i "s/$3/$2/g" AndroidManifest.xml
             echo "✔️ Successfully named the app"
 
         else
@@ -144,7 +144,7 @@ configure_android_configuration__PACKAGE_NAME(){
 
             echo "✔️ found AndroidManifest.xml"
             echo "Naming the package to $2"
-            sed -i "s/package_name/$2/g" AndroidManifest.xml
+            sed -i "s/$3/$2/g" AndroidManifest.xml
             echo "✔️ Successfully named the package"
 
         else
@@ -173,7 +173,7 @@ configure_android_configuration__PACKAGE_NAME_SECOND(){
 
             echo "✔️ found AndroidManifest.xml"
             echo "Naming the package to $2"
-            sed -i "s/package_name/$2/g" AndroidManifest.xml
+            sed -i "s/$3/$2/g" AndroidManifest.xml
             echo "✔️ Successfully named the package"
 
         else
@@ -203,7 +203,7 @@ configure_android_configuration__PACKAGE_NAME_KOTLIN(){
 
             echo "✔️ found MainActivity.kt"
             echo "Naming the package to $2"
-            sed -i "s/package_name/$2/g" MainActivity.kt
+            sed -i "s/$3/$2/g" MainActivity.kt
             echo "✔️ Successfully named the package"
 
         else
@@ -233,7 +233,7 @@ configure_android_configuration_APPLICATION_ID(){
 
             echo "✔️ found build.gradle"
             echo "Naming the application id to $2"
-            sed -i "s/application_id/$2/g" build.gradle
+            sed -i "s/$3/$2/g" build.gradle
             echo "✔️ Successfully changed application_id"
 
         else
@@ -310,6 +310,14 @@ move_and_create_original_package_from_test_package_KOTLIN(){
     fi
 }
 
+#configure_android
+configure_android(){
+    configure_android_configuration__APP_NAME $1 $2 $7
+    configure_android_configuration__PACKAGE_NAME $1 $3 $5
+    configure_android_configuration__PACKAGE_NAME_SECOND $1 $3 $5
+    configure_android_configuration__PACKAGE_NAME_KOTLIN $1 $3 $5
+    configure_android_configuration_APPLICATION_ID $1 $4 $6
+}
 #check paths
 checkpaths(){
     check_app_path $1
@@ -318,18 +326,9 @@ checkpaths(){
 
 #configure_ios
 configure_ios(){
-    configure_ios_configuration__APP_NAME $1 $2
-    configure_ios_configuration__PACKAGE_NAME $1 $3
+    configure_ios_configuration__APP_NAME $1 $2 $5
+    configure_ios_configuration__PACKAGE_NAME $1 $3 $4
 
-}
-
-#configure_android
-configure_android(){
-    configure_android_configuration__APP_NAME $1 $2 
-    configure_android_configuration__PACKAGE_NAME $1 $3
-    configure_android_configuration__PACKAGE_NAME_SECOND $1 $3
-    configure_android_configuration__PACKAGE_NAME_KOTLIN $1 $3
-    configure_android_configuration_APPLICATION_ID $1 $4
 }
 
 #kotlin directory renames and file handling
@@ -340,31 +339,35 @@ kotlin(){
     move_and_create_original_package_from_test_package_KOTLIN $1 $2
 }
 
-#basic inputs and output
-# echo "Welcome to DAPHNE SOLUTIONS whitelabeling script :)"
-# echo "Enter a name for your Application eg: app :"
-# read __APP_NAME
-# echo "Enter the package name for your Application eg: com.example.company :"
-# read __PACKAGE_NAME
-# echo "Enter the application id for your Application eg: com.example.app"
-# read __APPLICATION_ID
-# echo "Enter the path where your App Icon exists :"
-# read __ICON_PATH
-# echo "Enter the path to the app to WhiteLabel :"
-# read __APP_PATH 
+# basic inputs and output
 
-__APP_NAME="test3"
-__PACKAGE_NAME="com.daphne.test3"
-__APPLICATION_ID="com.daphne.app"
-__ICON_PATH="/home/saugat/Downloads/icon2.jpeg"
-__APP_PATH="/home/saugat/dev/whitelabelScript/test3"
-__KOTLIN_NEW_PATH="/com/daphne/test3"
+echo "Welcome to DAPHNE SOLUTIONS whitelabeling script :)"
+echo "Enter a name for your Application eg: app :"
+read __APP_NAME
+echo "Enter the package name for your Application eg: com.example.company :"
+read __PACKAGE_NAME
+echo "Enter the application id for your Application eg: com.example.app"
+read __APPLICATION_ID
+echo "Enter the path where your App Icon exists :"
+read __ICON_PATH
+echo "Enter the path to the app to WhiteLabel :"
+read __APP_PATH 
+echo "Enter package name to replace"
+read __TO_REPLACE_PACKAGE_NAME
+echo "Enter App name to replace"
+read __TO_REPLACE_APP_NAME
+echo "Enter Application ID to replace"
+read __TO_REPLACE_APPLICATION_ID
+echo "Enter New Kotlin Package Path"
+read __KOTLIN_NEW_PATH
+
 
 #function executions
 checkpaths $__APP_PATH $__ICON_PATH
 install_sed
 copy_icon_to_path $__ICON_PATH "$__APP_PATH/icon/"
-configure_ios $__APP_PATH $__APP_NAME $__PACKAGE_NAME
-configure_android $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__APPLICATION_ID
+configure_ios $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__TO_REPLACE_PACKAGE_NAME $__TO_REPLACE_APP_NAME
+configure_android $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__APPLICATION_ID $__TO_REPLACE_PACKAGE_NAME $__TO_REPLACE_APPLICATION_ID $__TO_REPLACE_APP_NAME
 kotlin $__APP_PATH $__KOTLIN_NEW_PATH
 echo "✔️ Done"
+
