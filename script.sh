@@ -319,6 +319,45 @@ move_and_create_original_package_from_test_package_KOTLIN(){
     fi
 }
 
+check_and_add_gitattributes(){
+    local gitattributes="
+            ios/project.pbxproj merge=ours
+            ios/runner/Info.plist merge=ours
+            android/app/build.gradle merge=ours 
+            android/app/src/main/AndroidManifest.xml merge=ours 
+            android/app/src/main/kotlin merge=ours 
+            android/app/src/main/AndroidManifest.xml merge=ours 
+            android/app/src/main/kotlin/MainActivity.kt merge=ours
+            android/app/src/debug/AndroidManifest.xml merge=ours
+            android/app/src/profile/AndroidManifest.xml merge=ours
+            "
+    if test -f $1;then
+        echo "you already have a merge strategy file gitignore"
+        echo "a for replace b for keep "
+        read choice 
+        if test choice == a;then
+            rm -rf "$1/.gitattributes"
+            echo gitattributes > .gitattributes
+        else
+            continue
+        fi 
+    else
+        echo "app dir not found"
+    fi 
+}
+
+create_new_branch(){
+    git checkout master 
+    git pull 
+    git checkout -b $1
+}
+
+push_new_branch(){
+    git add .
+    git commit -m "initial commit"
+    git push --set-upstream origin $1
+}
+
 #configure_android
 configure_android(){
     configure_android_configuration__APP_NAME $1 $2 $7
@@ -348,6 +387,16 @@ kotlin(){
     move_and_create_original_package_from_test_package_KOTLIN $1 $2
 }
 
+end_git_control(){
+    check_and_add_gitattributes $1
+    push_new_branch $2
+}
+
+start_git_control(){
+    create_new_branch $1
+}
+
+
 # basic inputs and output
 
 echo "Welcome to DAPHNE SOLUTIONS whitelabeling script :)"
@@ -369,14 +418,17 @@ echo "Enter Application ID to replace"
 read __TO_REPLACE_APPLICATION_ID
 echo "Enter New Kotlin Package Path"
 read __KOTLIN_NEW_PATH
-
+echo "Enter a branch name eg: app/app-name-package-name use - instead of dots no space allowed"
+read __BRANCH_NAME
 
 #function executions
 checkpaths $__APP_PATH $__ICON_PATH
 install_sed
+start_git_control $__BRANCH_NAME
 copy_icon_to_path $__ICON_PATH $__APP_PATH
 configure_ios $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__TO_REPLACE_PACKAGE_NAME $__TO_REPLACE_APP_NAME
 configure_android $__APP_PATH $__APP_NAME $__PACKAGE_NAME $__APPLICATION_ID $__TO_REPLACE_PACKAGE_NAME $__TO_REPLACE_APPLICATION_ID $__TO_REPLACE_APP_NAME
 kotlin $__APP_PATH $__KOTLIN_NEW_PATH
+git_control $__APP_PATH , $__BRANCH_NAME
 echo "✔️ Done"
 
